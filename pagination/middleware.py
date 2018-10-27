@@ -3,10 +3,11 @@ def get_page(self):
     A function which will be monkeypatched onto the request to get the current
     integer representing the current page.
     """
+
     try:
-        return int(self.REQUEST['page'])
+        self.page = int(self.GET['page']) or int(self.POST['page'])
     except (KeyError, ValueError, TypeError):
-        return 1
+        self.page = 1
 
 class PaginationMiddleware(object):
     """
@@ -21,6 +22,7 @@ class PaginationMiddleware(object):
         # Code to be executed for each request before
         # the view (and later middleware) are called.
 
+        get_page(request)
         response = self.get_response(request)
 
         # Code to be executed for each request/response after
@@ -29,4 +31,4 @@ class PaginationMiddleware(object):
         return response
 
     def process_request(self, request):
-        request.__class__.page = property(get_page)
+        request.page = property(get_page)
